@@ -1,0 +1,76 @@
+import json
+import os.path
+
+import requests
+
+from .Utils import Utils
+
+class TTSUtils:
+    @staticmethod
+    def ChatTTS(text, to, voiceid=5432):
+        headers = {"Content-Type": "application/json"}
+        text = {"text": text, "seed": voiceid}
+        response = requests.post("http://localhost:9880", data=json.dumps(text), headers=headers)
+        data = response.content
+        Utils.mkdir(to)
+        with open(to, mode='wb') as f:
+            f.write(data)
+        return to
+        pass
+
+    @staticmethod
+    def ChatTTS_with_break(text, to, voiceid=1342):
+        pieces = TTSUtils.breakdownText(text)
+        print(f"tts pieces: {pieces}")
+        from pydub import AudioSegment
+        sound = None
+        for piece in pieces:
+            if type(piece) == type(""):
+                # text path
+                id, path = Utils.generatePathId(namespace="tts", exten="wav")
+                dir = os.path.dirname(path)
+                if not os.path.exists(dir):
+                    os.makedirs(dir)
+                TTSUtils.ChatTTS(piece, path, voiceid)
+                clip = AudioSegment.from_file(path, format='wav')
+            else:
+                clip = AudioSegment.silent(duration=piece * 1000)
+
+            if sound is None:
+                sound = clip
+            else:
+                sound = sound + clip
+        sound.export(to,format='wav')
+
+    @staticmethod
+    def breakdownText(text:str):
+        muteMode = False
+        result = []
+        temp = ""
+        for char in text:
+            if char == "[":
+                muteMode = True
+                if len(temp) > 0:
+                    result.append(temp)
+                    temp = ""
+                continue
+            if char == "]":
+                muteMode = False
+                if len(temp) > 0:
+                    result.append(int(temp))
+                    temp = ""
+                continue
+            temp += char
+        if len(temp) > 0:
+            if muteMode:
+                result.append(int(temp))
+            else:
+                result.append(temp)
+        return result
+
+
+if __name__ == "__main__":
+    result = TTSUtils.ChatTTS(
+        "长按手柄的电源按钮:大多数PS4手柄都有一个单独的电源按钮,您可以长按几秒钟来完全关闭它。使用PS4主机:连接您的PS4手柄到PS4主机后,在主机上找到并选择“设置”选项。在设置菜单中,选择“控制器”,然后选择“断开”。这将从PS4主机中断开与手柄的连接。"
+        , "r:\\outputChartTTS.wav")
+    print(result)
