@@ -125,3 +125,16 @@ class Utils:
             return True
         return False
         pass
+
+    @staticmethod
+    def listAllFilesInSubFolder(input_dir):
+        result = []
+        listdir = os.listdir(input_dir)
+        for l in listdir:
+            f = os.path.join(input_dir, l)
+            if os.path.isfile(f):
+                result.append(f)
+            elif os.path.isdir(f):
+                result = result + Utils.listAllFilesInSubFolder(f)
+        return result
+        pass

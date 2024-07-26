@@ -49,6 +49,8 @@ class ImmortalPlayer:
 
         nextList = ImmortalEntity.searchNextNodes(jsConfig, newNodeId, newContext)
 
+        newContext = ImmortalPlayer.postRun(newContext, nextList)
+
         return node, {"data": nextList}, newContext
 
     @staticmethod
@@ -108,6 +110,23 @@ class ImmortalPlayer:
         if newContext.keys().__contains__(ContextKeyword.nodewalkcount):
             traversed = newContext[ContextKeyword.nodewalkcount]
         newContext.setdefault(ContextKeyword.nodewalkcount, traversed+1)
+        return newContext
+        pass
+
+    @staticmethod
+    def postRun(newContext, nextList):
+        # set automatic run if only one in nextlist and title is empty
+
+        if len(nextList) == 1 and len(nextList[0]['Title']) == 0:
+            if not newContext.keys().__contains__(ContextKeyword.AutoPass):
+                newContext.setdefault(ContextKeyword.AutoPass, 'True')
+            else:
+                newContext[ContextKeyword.AutoPass] = 'True'
+        else:
+            if not newContext.keys().__contains__(ContextKeyword.AutoPass):
+                newContext.setdefault(ContextKeyword.AutoPass, 'False')
+            else:
+                newContext[ContextKeyword.AutoPass] = 'False'
         return newContext
         pass
 

@@ -134,7 +134,8 @@ class EventHandler:
             var2 = val[1]
             if EventHandler.Eventsdict.keys().__contains__(k):
                 func = EventHandler.Eventsdict[k]
-                context = func(context, var1, var2)
+                print(f'var1:{var1} var2: {var2}')
+                context = func(context, [var1, var2])
                 print(f"after handle: {context}")
         return context
         pass
@@ -160,6 +161,10 @@ class EventHandler:
         previdlist = ImmortalEntity.ImmortalEntity.getPrevNode(node)
         if previdlist is not None and len(previdlist) > 0:
             if not previdlist.__contains__(nodeid):
+                return False
+        else:
+            # empty mapping, which means root node
+            if len(mapping) == 1 and mapping[0].keys().__iter__().__next__() == 'Parent':
                 return False
         for item in mapping:
             k = item.keys().__iter__().__next__()
