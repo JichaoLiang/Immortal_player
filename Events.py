@@ -78,6 +78,16 @@ class EventBehavior:
         pass
 
     @staticmethod
+    def notEqual(field:dict, var)->bool:
+        key = var[0]
+        value = var[1]
+        if not field.keys().__contains__(key):
+            field.setdefault(key, 0)
+        val = field[key]
+        return val != value
+        pass
+
+    @staticmethod
     def contains(field:dict, var)->bool:
         key = var[0]
         value = var[1]
@@ -85,6 +95,16 @@ class EventBehavior:
             field.setdefault(key, [])
         val = field[key]
         return val.__contains__(value)
+        pass
+
+    @staticmethod
+    def notContains(field:dict, var)->bool:
+        key = var[0]
+        value = var[1]
+        if not field.keys().__contains__(key):
+            field.setdefault(key, [])
+        val = field[key]
+        return not val.__contains__(value)
         pass
 
     @staticmethod
@@ -120,7 +140,9 @@ class EventHandler:
         "gt": EventBehavior.gt,
         "lt": EventBehavior.lt,
         "equal": EventBehavior.equal,
+        "not_equal": EventBehavior.notEqual,
         "contains": EventBehavior.contains,
+        "not_contains": EventBehavior.notContains,
         "and": EventBehavior.And,
         "or": EventBehavior.Or
     }
@@ -135,7 +157,15 @@ class EventHandler:
             if EventHandler.Eventsdict.keys().__contains__(k):
                 func = EventHandler.Eventsdict[k]
                 print(f'var1:{var1} var2: {var2}')
-                context = func(context, [var1, var2])
+                if var1 == keywords.ContextKeyword.allcustomvalue:
+                    keycount = len(context.keys())
+                    keys = list(context.keys())
+                    for i in range(0, keycount):
+                        contextkey = keys[i]
+                        if contextkey not in keywords.ContextKeyword.notCustomKeys:
+                            context = func(context, [var1, var2])
+                else:
+                    context = func(context, [var1, var2])
                 print(f"after handle: {context}")
         return context
         pass
