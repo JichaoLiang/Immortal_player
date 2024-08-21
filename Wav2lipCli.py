@@ -1,12 +1,66 @@
 import os
 import sys
+import shutil
 
-from .Utils import Utils
+from gradio_client import client,handle_file
+from gradio_client.client import Client
+from Utils import Utils
 import time
 import hashlib
 import json
 
+# musetalkpkg = __import__("ComfyUI-MuseTalk")
+# musetalknodes = musetalkpkg.nodes
+# vhspkg = __import__("ComfyUI-VideoHelperSuite")
+# vhsnodes = vhspkg.videohelpersuite.nodes
+
 class Wav2lipCli:
+    @staticmethod
+    def videocheckpointExists(videoCheckpointID:str)->bool:
+        checkpoint_basepath = r'D:\MyWork\Projects\dhlive\DH_live\video_data'
+        ckptpath = os.path.join(checkpoint_basepath, videoCheckpointID)
+        return os.path.exists(ckptpath)
+
+    @staticmethod
+    def dh_live(audioPath: str, faceVideoID: str, toPath: str):
+        client = Client("http://127.0.0.1:7860/")
+        result = client.predict(
+            face=faceVideoID,
+            audio=handle_file(audioPath),
+            api_name="/do_cloth"
+        )
+        print(result)
+        videopath = result["video"]
+        shutil.move(videopath, toPath)
+        return toPath
+        pass
+
+    @staticmethod
+    def dh_live_make_checkpoint(videopath:str):
+        client = Client("http://127.0.0.1:7860/")
+        result = client.predict(
+            face={"video": handle_file(videopath)},
+            api_name="/do_make"
+        )
+        print(result)
+        videoname = os.path.basename(videopath)
+        return videoname
+
+    # @staticmethod
+    # def musetalk(audioPath: str, faceVideoPath: str, toPath: str, bbox_shift=6, batch_size=16):
+    #     # Utils.mkdir(toPath)
+    #     musetalk = musetalknodes.MuseTalkRun()
+    #     images = musetalk.run(faceVideoPath,audioPath,bbox_shift,batch_size)[0]
+    #     loadaudio = vhsnodes.LoadAudio()
+    #     audio = loadaudio.load_audio(audio_file=audioPath, seek_seconds=0)[0]
+    #     videocombine = vhsnodes.VideoCombine()
+    #     filenames = videocombine.combine_video(images=images,audio=audio,frame_rate=30,loop_count=0,format="video/h264-mp4")
+    #     # print(filenames)
+    #     filenames = filenames["result"]
+    #     resultpath = filenames[0][-1][-1]
+    #     shutil.move(resultpath,toPath)
+    #     pass
+
     @staticmethod
     def wav2lip(audioPath: str, faceVideoPath: str, toPath: str):
         Utils.mkdir(toPath)

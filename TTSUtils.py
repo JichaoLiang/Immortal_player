@@ -3,13 +3,16 @@ import os.path
 
 import requests
 
-from .Utils import Utils
+from Utils import Utils
 
 class TTSUtils:
+
+    regularFemale=9245
+
     @staticmethod
-    def ChatTTS(text, to, voiceid=5432):
+    def ChatTTS(text, to, speed=1, voiceid=9245):
         headers = {"Content-Type": "application/json"}
-        text = {"text": text, "seed": voiceid}
+        text = {"text": text, "seed": voiceid, "speed": speed}
         response = requests.post("http://localhost:9880", data=json.dumps(text), headers=headers)
         data = response.content
         Utils.mkdir(to)
@@ -19,7 +22,7 @@ class TTSUtils:
         pass
 
     @staticmethod
-    def ChatTTS_with_break(text, to, voiceid=1342):
+    def ChatTTS_with_break(text, to, speed=5, voiceid=1342):
         pieces = TTSUtils.breakdownText(text)
         print(f"tts pieces: {pieces}")
         from pydub import AudioSegment
@@ -31,7 +34,7 @@ class TTSUtils:
                 dir = os.path.dirname(path)
                 if not os.path.exists(dir):
                     os.makedirs(dir)
-                TTSUtils.ChatTTS(piece, path, voiceid)
+                TTSUtils.ChatTTS(piece, path,speed, voiceid)
                 clip = AudioSegment.from_file(path, format='wav')
             else:
                 clip = AudioSegment.silent(duration=piece * 1000)
@@ -41,6 +44,18 @@ class TTSUtils:
             else:
                 sound = sound + clip
         sound.export(to,format='wav')
+
+    @staticmethod
+    def cosvoiceTTS(text, to, speakerID='dushuai'):
+        headers = {"Content-Type": "application/json"}
+        text = {"text": text, "speaker": speakerID, "new": 1}
+        response = requests.post("http://localhost:9880", data=json.dumps(text), headers=headers)
+        data = response.content
+        Utils.mkdir(to)
+        with open(to, mode='wb') as f:
+            f.write(data)
+        return to
+        pass
 
     @staticmethod
     def breakdownText(text:str):
@@ -67,7 +82,6 @@ class TTSUtils:
             else:
                 result.append(temp)
         return result
-
 
 if __name__ == "__main__":
     result = TTSUtils.ChatTTS(

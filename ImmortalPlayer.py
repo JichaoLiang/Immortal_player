@@ -7,8 +7,9 @@ sys.path.append(script_path)
 sys.path.append("")
 sys.path.append(script_path)
 print(sys.path)
-from ImmortalEntity import ImmortalEntity
+from ImmortalEntity import ImmortalEntity,NodeType
 from keywords import ContextKeyword
+from Actions import *
 import Events
 
 
@@ -49,7 +50,11 @@ class ImmortalPlayer:
 
         nextList = ImmortalEntity.searchNextNodes(jsConfig, newNodeId, newContext)
 
-        newContext = ImmortalPlayer.postRun(newContext, nextList)
+        if ImmortalEntity.getNodeType(node) == NodeType.Action:
+            action:IAction = ImmortalEntity.getActionByNode(node)
+            node, nextList, newContext = action.handleRequest(jsConfig, node, nextList, newContext)
+
+        newContext = ImmortalPlayer.postRun(newContext, nextList, node)
 
         return node, {"data": nextList}, newContext
 
@@ -114,7 +119,7 @@ class ImmortalPlayer:
         pass
 
     @staticmethod
-    def postRun(newContext, nextList):
+    def postRun(newContext, nextList, node):
         # set automatic run if only one in nextlist and title is empty
 
         if len(nextList) == 1 and len(nextList[0]['Title']) == 0:
@@ -127,6 +132,18 @@ class ImmortalPlayer:
                 newContext.setdefault(ContextKeyword.AutoPass, 'False')
             else:
                 newContext[ContextKeyword.AutoPass] = 'False'
+
+        # set action signal
+        if ImmortalEntity.getNodeType(node) == NodeType.Action:
+            if not newContext.keys().__contains__(ContextKeyword.NodeType):
+                newContext.setdefault(ContextKeyword.NodeType, NodeType.Action)
+            else:
+                newContext[ContextKeyword.NodeType] = NodeType.Action
+        else:
+            if not newContext.keys().__contains__(ContextKeyword.NodeType):
+                newContext.setdefault(ContextKeyword.NodeType, NodeType.Node)
+            else:
+                newContext[ContextKeyword.NodeType] = NodeType.Node
         return newContext
         pass
 
