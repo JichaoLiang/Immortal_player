@@ -26,7 +26,11 @@ class OllamaCli:
 
         history.append(message)
         result = OllamaCli.chat(history, model)
-        history.append(result)
+        newHistoryItem = {
+            'role': 'assistant',
+            'content': result['message']['content']
+        }
+        history.append(newHistoryItem)
         # print(result)
         return result['message']['content'], history
 

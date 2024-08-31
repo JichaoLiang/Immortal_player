@@ -7,7 +7,7 @@ sys.path.append(script_path)
 sys.path.append("")
 sys.path.append(script_path)
 print(sys.path)
-from ImmortalEntity import ImmortalEntity,NodeType
+import ImmortalEntity
 from keywords import ContextKeyword
 from Actions import *
 import Events
@@ -17,6 +17,7 @@ import Events
 class ImmortalPlayer:
     @staticmethod
     def Play(packageDir, nodeid=None, contextDict=None):
+        print(f'package, {packageDir}')
         configfile = os.path.join(packageDir, 'entity.json')
         with open(configfile, 'r', encoding='utf-8') as f:
             configStr = f.read()
@@ -39,20 +40,17 @@ class ImmortalPlayer:
             newNodeId = properties["root"]
         else:
             newNodeId = nodeid
-            # node = ImmortalEntity.getNodeById(jsConfig, nodeid)
-            # nextList = ImmortalEntity.searchNextNodes(jsConfig, nodeid,newContext)
 
-
-        node = ImmortalEntity.getNodeById(jsConfig, newNodeId)
+        node = ImmortalEntity.ImmortalEntity.getNodeById(jsConfig, newNodeId)
 
         # handle events
         newContext = ImmortalPlayer.handleOnEnter(jsConfig, node, newContext)
 
-        nextList = ImmortalEntity.searchNextNodes(jsConfig, newNodeId, newContext)
+        nextList = ImmortalEntity.ImmortalEntity.searchNextNodes(jsConfig, newNodeId, newContext)
 
-        if ImmortalEntity.getNodeType(node) == NodeType.Action:
-            action:IAction = ImmortalEntity.getActionByNode(node)
-            node, nextList, newContext = action.handleRequest(jsConfig, node, nextList, newContext)
+        if ImmortalEntity.ImmortalEntity.getNodeType(node) == ImmortalEntity.NodeType.Action:
+            action:IAction = ImmortalEntity.ImmortalEntity.getActionByNode(node)()
+            node, nextList, newContext = action.handleRequest(packageDir, jsConfig, node, nextList, newContext)
 
         newContext = ImmortalPlayer.postRun(newContext, nextList, node)
 
@@ -66,7 +64,7 @@ class ImmortalPlayer:
         if lastNodeid is not None and len(lastNodeid) > 0:
             print(f"last node id : {len(lastNodeid)}")
             # handle last node on leave event
-            lastnode = ImmortalEntity.getNodeById(entity, lastNodeid)
+            lastnode = ImmortalEntity.ImmortalEntity.getNodeById(entity, lastNodeid)
             events = lastnode["Events"]
             onleavekey = "Onleave"
             if events.keys().__contains__(onleavekey):
@@ -134,16 +132,16 @@ class ImmortalPlayer:
                 newContext[ContextKeyword.AutoPass] = 'False'
 
         # set action signal
-        if ImmortalEntity.getNodeType(node) == NodeType.Action:
+        if ImmortalEntity.ImmortalEntity.getNodeType(node) == ImmortalEntity.NodeType.Action:
             if not newContext.keys().__contains__(ContextKeyword.NodeType):
-                newContext.setdefault(ContextKeyword.NodeType, NodeType.Action)
+                newContext.setdefault(ContextKeyword.NodeType, ImmortalEntity.NodeType.Action)
             else:
-                newContext[ContextKeyword.NodeType] = NodeType.Action
+                newContext[ContextKeyword.NodeType] = ImmortalEntity.NodeType.Action
         else:
             if not newContext.keys().__contains__(ContextKeyword.NodeType):
-                newContext.setdefault(ContextKeyword.NodeType, NodeType.Node)
+                newContext.setdefault(ContextKeyword.NodeType, ImmortalEntity.NodeType.Node)
             else:
-                newContext[ContextKeyword.NodeType] = NodeType.Node
+                newContext[ContextKeyword.NodeType] = ImmortalEntity.NodeType.Node
         return newContext
         pass
 
@@ -165,7 +163,7 @@ if __name__ == "__main__":
         nodeid = f.read()
         if len(nodeid) == 0:
             nodeid = None
-    with open(fcontextDict) as f:
+    with open(fcontextDict, encoding='utf-8') as f:
         contextDict = json.loads(f.read())
 
     node, nextList, newContext = ImmortalPlayer.Play(packageDir, nodeid, contextDict)

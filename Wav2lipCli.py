@@ -24,13 +24,16 @@ class Wav2lipCli:
     @staticmethod
     def dh_live(audioPath: str, faceVideoID: str, toPath: str):
         client = Client("http://127.0.0.1:7860/")
+        handled = handle_file(audioPath)
+        print(f'handled:{handled}')
         result = client.predict(
             face=faceVideoID,
-            audio=handle_file(audioPath),
+            audio=handled,
             api_name="/do_cloth"
         )
         print(result)
         videopath = result["video"]
+        Utils.mkdir(toPath)
         shutil.move(videopath, toPath)
         return toPath
         pass
