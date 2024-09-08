@@ -1,0 +1,2 @@
+cd D:\ComfyUI_windows_portable_nightly_pytorch\python_embeded_cu118
+D:\ComfyUI_windows_portable_nightly_pytorch\python_embeded_cu118\python.exe D:\ComfyUI_windows_portable_nightly_pytorch\ComfyUI\custom_nodes\ComfyUI-Immortal-player\DanmuCollector.py 1756269752
