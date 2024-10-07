@@ -17,6 +17,11 @@ import Events
 class ImmortalPlayer:
     @staticmethod
     def Play(packageDir, nodeid=None, contextDict=None):
+        node, nextList, newContext = ImmortalPlayer.playNode(packageDir, nodeid, contextDict)
+        return node, {"data": nextList}, newContext
+
+    @staticmethod
+    def playNode(packageDir, nodeid=None, contextDict=None):
         print(f'package, {packageDir}')
         configfile = os.path.join(packageDir, 'entity.json')
         with open(configfile, 'r', encoding='utf-8') as f:
@@ -33,6 +38,8 @@ class ImmortalPlayer:
         else:
             newContext = contextDict
 
+        if nodeid is None:
+            newContext = ImmortalPlayer.initContext(jsConfig, newContext)
         newContext = ImmortalPlayer.updateContext(newContext)
         newContext = ImmortalPlayer.handleOnLeave(jsConfig, newContext)
 
@@ -54,7 +61,7 @@ class ImmortalPlayer:
 
         newContext = ImmortalPlayer.postRun(newContext, nextList, node)
 
-        return node, {"data": nextList}, newContext
+        return node, nextList, newContext
 
     @staticmethod
     def handleOnLeave(entity, newContext:dict):
@@ -143,6 +150,17 @@ class ImmortalPlayer:
             else:
                 newContext[ContextKeyword.NodeType] = ImmortalEntity.NodeType.Node
         return newContext
+        pass
+
+    @staticmethod
+    def initContext(entity, contxt:dict):
+        contextsetting:dict = ImmortalEntity.ImmortalEntity.getContextField(entity)
+        for k in contextsetting.keys():
+            if contxt.keys().__contains__(k):
+                contxt[k] = contextsetting[k]
+            else:
+                contxt.setdefault(k, contextsetting[k])
+        return contxt
         pass
 
 

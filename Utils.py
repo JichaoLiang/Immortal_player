@@ -1,3 +1,4 @@
+import json
 import random
 import shutil
 import time
@@ -138,3 +139,35 @@ class Utils:
                 result = result + Utils.listAllFilesInSubFolder(f)
         return result
         pass
+
+
+    @staticmethod
+    def mergeDict(dict1:dict, dict2:dict):
+        allkeys = set(list(dict1.keys()) + list(dict2.keys()))
+        result = {}
+        for key in allkeys:
+            if dict1.keys().__contains__(key) and dict2.keys().__contains__(key):
+                value = dict1[key]
+                if type(value) == type([]):
+                    merged = list(set([json.dumps(s) for s in value] + [json.dumps(s) for s in dict2[key]]))
+                    merged = [json.loads(s) for s in merged]
+                    result.setdefault(key, merged)
+                elif type(value) == type({}):
+                    merged = Utils.mergeDict(value, dict2[key])
+                    result.setdefault(key, merged)
+                else:
+                    result.setdefault(value)
+            elif dict1.keys().__contains__(key) and not dict2.keys().__contains__(key):
+                result.setdefault(key, dict1[key])
+            elif not dict1.keys().__contains__(key) and dict2.keys().__contains__(key):
+                result.setdefault(key, dict2[key])
+        return result
+        pass
+
+    @staticmethod
+    def is_float(string):
+        try:
+            float(string)
+            return True
+        except:
+            return False

@@ -13,6 +13,9 @@ from moviepy.video.VideoClip import TextClip
 # from MovieMaker.TTSAgent import TTSAgent
 # from Utils.DataStorageUtils import DataStorageUtils
 import wave
+import librosa
+import shutil
+import soundfile as sf
 # from .. import Utils
 
 
@@ -295,7 +298,7 @@ class MovieMakerUtils:
         pass
 
     @staticmethod
-    def imageToVideo(imgPath, duration, to, resize=(900, 1200)):
+    def imageToVideo(imgPath, duration, to, resize=(920, 1480)):
         clip = ImageClip(imgPath, duration=duration)
         if resize is not None:
             clip = clip.resize(resize)
@@ -324,6 +327,9 @@ class MovieMakerUtils:
         sequence = [bg, clip]
         composited = CompositeVideoClip(sequence)
 
+        dir = os.path.dirname(to)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
         composited.write_videofile(to,fps=24)
         return to
 
@@ -334,6 +340,23 @@ class MovieMakerUtils:
             rate = wav_file.getframerate()
             duration = frames / float(rate)
             return duration
+
+
+
+    @staticmethod
+    def resamplewav(path, resamplerate=22050):
+        temp = path + '.temp.wav'
+        MovieMakerUtils.resample4wavs(path, temp, resamplerate)
+        os.remove(path)
+        shutil.move(temp, path)
+
+    @staticmethod
+    def resample4wavs(frompath, topath, resamplerate=22050):
+        y, sr = librosa.load(frompath)
+        to_y = librosa.resample(y, orig_sr=sr, target_sr=resamplerate)
+        # librosa.output.write_wav(tofile, to_y, resamplerate)过时代码, 需要换成下面的代码
+        sf.write(topath, to_y, resamplerate)
+
     @staticmethod
     def randomPick(length):
         rand = random.Random()

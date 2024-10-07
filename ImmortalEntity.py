@@ -201,6 +201,36 @@ class ImmortalEntity:
         return ActionMapping[actionname]
         pass
 
+    @staticmethod
+    def getDisableKey(nodeid):
+        return f"disabled_{nodeid}"
+
+    def getContextField(entity):
+        prop:dict = entity["Properties"]
+        if not prop.keys().__contains__("context"):
+            prop.setdefault("context", {})
+        return prop["context"]
+
+    @staticmethod
+    def SetContext(entity, key, value):
+        contextField:dict = ImmortalEntity.getContextField(entity)
+        if not contextField.keys().__contains__(key):
+            contextField.setdefault(key, value)
+        else:
+            contextField[key] = value
+        pass
+
+
+    @staticmethod
+    def mergeContext(entity1, entity2):
+        contxt1 = ImmortalEntity.getContextField(entity1)
+        contxt2 = ImmortalEntity.getContextField(entity2)
+        merged = Utils.mergeDict(contxt1, contxt2)
+        newEntity = Utils.cloneDict(entity1)
+        newEntity["Properties"]["context"] = merged
+        return newEntity
+
+
 
 class NodeType:
     Action = "Action"

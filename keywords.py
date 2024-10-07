@@ -10,6 +10,7 @@ class ContextKeyword:
     notCustomKeys = [nodewalkcount,AutoPass,currentnodeid,bgmkey]
 
 class EntityKeyword:
+    ActionKeywordMapping = "ActionKeywordMapping"
     voiceId = "voiceid"
     Events = "Events"
     ttsspeakerid = "voiceid"
